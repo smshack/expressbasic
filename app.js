@@ -7,7 +7,10 @@ const port = 8080
 // use 모든 경로에 적용되야할 사항
 // all 해당 경로에 맞는 get,post,delete, put ....  등의 모든 요청 
 app.use(cookieParser())
-
+app.use(express.json())
+app.post('/',(req,res,next)=>{
+    console.log(req.body)
+})
 app.get(
     '/',
     (req,res,next)=>{
