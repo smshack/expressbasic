@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"nodemon app"
+    "start": "nodemon app"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,7 @@
     "nodemon": "^2.0.15"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.6",
     "express": "^4.17.2"
   }
 }
