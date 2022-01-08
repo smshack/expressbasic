@@ -1,43 +1,65 @@
-import express from "express";
-import cookieParser from 'cookie-parser'
+import express from 'express';
+import fs from 'fs';
+import fsAsync from 'fs/promises';
 
 const app = express();
-const port = 8080
 
-// use 모든 경로에 적용되야할 사항
-// all 해당 경로에 맞는 get,post,delete, put ....  등의 모든 요청 
-app.use(cookieParser())
-app.use(express.json())
-app.post('/',(req,res,next)=>{
-    console.log(req.body)
-})
-app.get(
-    '/',
-    (req,res,next)=>{
-        console.log('first')
-        next()
-        // next('route')  그 다음 미들웨어는 건너뜀
-        next(new Error('error'))
+app.use(express.json());
 
-    },
-    (req,res,next)=>{
-        console.log('second')
-        next()
-    },
+app.get('/file1', (req, res) => {
+    // 동기적인 함수를 호출하는 경우에는
+    // try catch문으로 감싸고
+    // catch 에서 에러를 던저준다
+  // 1.
+  // fs.readFile('/file1.txt', (err, data) => {
+  //   if (err) {
+  //     res.sendStatus(404);
+  //   }
+  // });
 
-)
+  // 2.
+  try {
+    const data = fs.readFileSync('/file1.txt');
+  } catch (error) {
+    // res.sendStatus(404);
+    res.status(404).send('File not found')
+  }
+});
+// 프로미스 코드일 경우
+app.get('/file2', (req, res) => {
+    // 비동기적인 처리일 경우
+    // then
+    // catch로 처리를 해야됨
+    //처리할 경우 콜백함수로 에러가 던져졌기 때문에
+    //  try catch로 외부에서 처리할 수 없고
+    // 콜백 함수 내에서 에러를 처리해 줘야 함
+  fsAsync
+    .readFile('/file2.txt') //
+    .catch((error) => {
+    //   res.sendStatus(404);
+    res.status(404).send('File2 not found')
+    });
+});
 
-app.get('/',(req,res,next)=>{
-    return res.send('third')
-})
+app.get('/file3', async (req, res) => {
+    // 코드 자체는 동기처럼 처리이지만
+    // 함수 자체는 Promise로 감싸지기 때문에 인식이 안됨
+    // get file3 {} 블록 함수는 Promise로 되기 때문에 
+    // try  catch를 이용해서 잡아야 함
+  try {
+    const data = await fsAsync.readFile('/file2.txt');
+  } catch {
+    // res.sendStatus(404);
+    res.status(404).send('File3 not found')
+  }
+});
 
-// 아무데서도 처리가 안됬을 경우
-app.use((req,res,next)=>{
-    return res.status(404).send('Not available!')
-})
-// 에러가 발생했을 때 
-app.use((error,req,res,next)=>{
-    console.error(error)
-    return res.status(500).send('Sorry! try later!')
-})
-app.listen(port)
+// 버전 5 이하에서는: require('express-async-errors');
+
+// Express 5 부터는 이렇게
+app.use((error, req, res, next) => {
+  console.error(error);
+  res.status(500).json({ message: 'Something went wrong' });
+});
+
+app.listen(8080);
